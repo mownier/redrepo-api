@@ -5,9 +5,9 @@
 package main
 
 import (
-	redrepoAPI "github.com/redrepo-api/services"
+	redrepoAPI "redrepo-api/services"
 )
 
 func main() {
-	redrepoAPI.Start()
+	redrepoAPI.Start(2121)
 }
