@@ -7,49 +7,45 @@ package services
 import ( 
 	"code.google.com/p/gorest"
 	"redrepo-api/models"
+    "redrepo-api/database"
 	"encoding/json"
 	"fmt"
 )
 
 type AccountService struct {
 	BaseService
-    createAccount		gorest.EndPoint `method:"POST"		path:"/account/"					postdata:"UserParamModel"`
-    retrieveAccount 	gorest.EndPoint	`method:"GET"		path:"/account/{userId:string}" 	output:"UserOutputModel"`
-    updateAccount 		gorest.EndPoint	`method:"PUT"		path:"/account/" 					postdata:"UserParamModel"`
-    deleteAccount		gorest.EndPoint	`method:"DELETE"	path:"/account/{userId:string}"`	
+    createAccount		gorest.EndPoint `method:"POST"		path:"/signup"   					        postdata:"SignUpParameters"`
+    retrieveAccount 	gorest.EndPoint	`method:"GET"		path:"/account/{accountId:string}" 	        output:"AccountOutput"`
+    retrieveSettings    gorest.EndPoint `method:"GET"       path:"/account/{accountId:string}/settings" output:"AccountSettingOutput"`
+    updateAccount 		gorest.EndPoint	`method:"PUT"		path:"/account/" 					        postdata:"AccountSettingParameters"`
+    deleteAccount		gorest.EndPoint	`method:"DELETE"	path:"/account/{accountId:string}"`	
 }
 
-func (service AccountService) CreateAccount(param models.UserParamModel) {
-	// Pseudocode
-	// 1. Insert new user
-	// 2. After successfully insert, fire back the response
-
-	authenticatedUser 					:= new(models.AuthenticatedUserOutputModel)
-	authenticatedUser.User 				= new(models.UserOutputModel)
-	authenticatedUser.User.FirstName 	= param.FirstName
-	authenticatedUser.User.LastName 	= param.LastName
-	authenticatedUser.User.Email 		= param.Email
-	authenticatedUser.User.Username 	= param.Username
-	authenticatedUser.AccessToken 		= "12321321hkjhj213"
-
-    responseString, err := json.Marshal(authenticatedUser)
+func (service AccountService) CreateAccount(param models.SignUpParameters) {
+    dbmap := database.OpenDatabase()
+    var accounts []database.Account
+    _, err := dbmap.Select(&accounts, "select * from accounts")
+    fmt.Printf("database error: %+v\n", err)
+    responseString, err := json.Marshal(param)
     responseCode := 400
-    if err == nil {
-    	fmt.Printf("%+v\n", param)
-    	service.ResponseBuilder().Write([]byte(responseString))
-    	responseCode = 200 
+    if err == nil { responseCode = 200 }
+    if responseCode == 200 {
+        fmt.Printf("parameters: %+v\n", param)
+        fmt.Printf("accounts: %+v\n", accounts)
+        service.ResponseBuilder().SetResponseCode(responseCode)
+        service.ResponseBuilder().Write([]byte(responseString))
     } else {
-    	fmt.Println(err)
+        fmt.Println(err)
     }
-
-    service.ResponseBuilder().SetResponseCode(responseCode)
+    database.CloseDatabase(dbmap)
+    return
 }
 
-func (service AccountService) RetrieveAccount(userId string) (output models.UserOutputModel) {
+func (service AccountService) RetrieveAccount(accountId string) (output models.AccountOutput) {
 	// Pseudocode
-	// 1. Find the userId does exist
-	// 1.1 If does exist, fire back a response with the info of the user
-	// 1.2 Else, fire back a response telling that the user does not exist
+	// 1. Find the accountId does exist
+	// 1.1 If does exist, fire back a response with the info of the account
+	// 1.2 Else, fire back a response telling that the account does not exist
 	
 	jsonString := `{"id":"1","first_name":"Mounir","last_name":"Ybanez","email":"rinuom91@gmail.com","username":"mownier","date_joined":"May 24, 2014","latitude":123,"longitude":10,"connected_to_facebook":0,"connected_to_twitter":0}`
     err := json.Unmarshal([]byte(jsonString), &output)
@@ -65,10 +61,14 @@ func (service AccountService) RetrieveAccount(userId string) (output models.User
 	return
 }
 
-func (service AccountService) UpdateAccount(param models.UserParamModel) {
+func (service AccountService) RetrieveSettings(accountId string) (output models.AccountSettingOutput) {
+    return
+}
+
+func (service AccountService) UpdateAccount(param models.AccountSettingParameters) {
  
 }
 
-func (service AccountService) DeleteAccount(userId string) {
+func (service AccountService) DeleteAccount(accountId string) {
    
 }
