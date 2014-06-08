@@ -13,7 +13,7 @@ type Account struct {
 	FirstName 	string 	`db:"first_name"`
 	LastName 	string 	`db:"last_name"`
 	Email 		string 	`db:"email"`
-	Password	string
+	Password	string	`db:"password"`
 	Username 	string 	`db:"username"`
 	BloodType 	string 	`db:"blood_type"`
 	Latitude 	float64	`db:"latitude"`

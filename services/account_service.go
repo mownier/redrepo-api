@@ -8,6 +8,7 @@ import (
 	"code.google.com/p/gorest"
 	"redrepo-api/models"
     "redrepo-api/dbase"
+    "redrepo-api/handlers"
 	"encoding/json"
 	"fmt"
 )
@@ -22,22 +23,38 @@ type AccountService struct {
 }
 
 func (service AccountService) CreateAccount(param models.SignUpParameters) {
+    responseCode := handlers.BAD_REQUEST
+    responseString := "{message:\"Bad Request\"}"
+
     dbmap := dbase.OpenDatabase()
     var accounts []dbase.Account
     _, err := dbmap.Select(&accounts, "select * from accounts")
     fmt.Printf("database error: %+v\n", err)
-    responseString, err := json.Marshal(param)
-    responseCode := 400
-    if err == nil { responseCode = 200 }
-    if responseCode == 200 {
-        fmt.Printf("parameters: %+v\n", param)
-        fmt.Printf("accounts: %+v\n", accounts)
-        service.ResponseBuilder().SetResponseCode(responseCode)
-        service.ResponseBuilder().Write([]byte(responseString))
+    
+    if err == nil {
+        responseCode = handlers.SUCCESS
+        responseString = "{message:\"Success\"}"
     } else {
-        fmt.Println(err)
+        responseCode = handlers.DATABASE_SERVER_ERROR
+        responseString = "{message:\"Database Server Error\"}"
     }
-    dbase.CloseDatabase(dbmap)
+    // responseString, err := json.Marshal(param)
+    // responseCode := 400
+    // if err == nil { responseCode = 200 }
+    // if responseCode == 200 {
+    //     fmt.Printf("parameters: %+v\n", param)
+    //     fmt.Printf("accounts: %+v\n", accounts)
+    //     for i:=0; i < len(accounts); i++ {
+    //         account := accounts[i]
+    //         fmt.Println(account.Id)
+    //         fmt.Println(account.FirstName)
+    //     }
+    // } else {
+    //     fmt.Println(err)
+    // }
+    // dbase.CloseDatabase(dbmap)
+    service.ResponseBuilder().SetResponseCode(responseCode)
+    service.ResponseBuilder().Write([]byte(responseString))
     return
 }
 

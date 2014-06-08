@@ -13,7 +13,7 @@ import (
 func OpenDatabase() *gorp.DbMap {
 	// connect to db using standard Go database/sql API
     // use whatever database/sql driver you wish
-    db, err := sql.Open("mysql", "root:@tcp(localhost:3306)/redrepo")
+    db, err := sql.Open("mysql", "root:root@tcp(localhost:3306)/redrepo")
 	if err != nil {
 		panic(err.Error()) // Just for example purpose. You should use proper error handling instead of panic
 	}
