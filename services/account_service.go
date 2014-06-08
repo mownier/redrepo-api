@@ -7,7 +7,7 @@ package services
 import ( 
 	"code.google.com/p/gorest"
 	"redrepo-api/models"
-    "redrepo-api/database"
+    "redrepo-api/dbase"
 	"encoding/json"
 	"fmt"
 )
@@ -22,8 +22,8 @@ type AccountService struct {
 }
 
 func (service AccountService) CreateAccount(param models.SignUpParameters) {
-    dbmap := database.OpenDatabase()
-    var accounts []database.Account
+    dbmap := dbase.OpenDatabase()
+    var accounts []dbase.Account
     _, err := dbmap.Select(&accounts, "select * from accounts")
     fmt.Printf("database error: %+v\n", err)
     responseString, err := json.Marshal(param)
@@ -37,7 +37,7 @@ func (service AccountService) CreateAccount(param models.SignUpParameters) {
     } else {
         fmt.Println(err)
     }
-    database.CloseDatabase(dbmap)
+    dbase.CloseDatabase(dbmap)
     return
 }
 

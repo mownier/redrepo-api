@@ -2,7 +2,7 @@
 // @author Mounir Ybanez
 // @date June 8, 2014
 
-package database
+package dbase
 
 type BaseEntry struct {
 	Id int64 `db:"id"`
