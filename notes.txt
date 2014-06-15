@@ -1,0 +1,39 @@
+Normal Sign In Algorithm
+1. Check table 'api_consumers' if consumer key does exist
+1.1 If consumer key exist, proceed to 2
+1.2 Else, throw an error ("Consumer key is invalid")
+2. Check table 'accounts' if (username OR email) and password match
+2.1 If matching is valid, proceed to 3
+2.2 Else, throw an error ("Account does not exist")
+3. Check table 'account_settings' if column 'verified_account' is true
+3.1 If true, proceed 4
+3.2 Else, throw an error ("Account not verified")
+4. Generate access token, refresh token, expiry date
+5. Insert a row in table 'authentication_info'
+6. Throw json data for a successful request
+
+Via SNS Sign In Algorithm
+1. Check table 'api_consumers' if consumer key does exist
+1.1 If consumer key exist, proceed to 2
+1.2 Else, throw an error ("Consumer key is invalid"))
+2. Check table 'accounts' if (username OR email) and password match
+2.1 If matching is valid, proceed to 3
+2.2 Else, throw an error ("Account does not exist")
+3. Check table 'account_settings' if column 'verified_account' is true
+3.1 If true, proceed 4
+3.2 Else, throw an error ("Account not verified")
+4. Get auth provider's name, access token, and refresh token
+5. Generate access token, refresh token, expiry date
+6. Insert a row in table 'authentication_info' 
+7. Throw json data for a successful request
+
+Sign Up Algorithm
+1. 1. Check table 'api_consumers' if consumer key does exist
+1.1 If consumer key exist, proceed to 2
+1.2 Else, throw an error ("Consumer key is invalid"))
+2. Check table 'accounts' if (username OR email) does exist
+2.1 If the account does not exist, proceed to 3
+2.2 Else, throw an error ("Account already exist")
+3. Insert a row in table 'accounts'
+4. Insert a row in table 'account_settings'
+5. 

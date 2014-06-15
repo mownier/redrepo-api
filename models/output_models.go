@@ -4,6 +4,11 @@
 
 package models
 
+type GeneralOutput struct {
+	BaseOutputModel
+	Message string `json:"message"`
+}
+
 type AccountOutput struct {
 	BaseOutputModel
 	Id 					string	`json:"id"`

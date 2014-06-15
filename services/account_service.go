@@ -8,51 +8,45 @@ import (
 	"code.google.com/p/gorest"
 	"redrepo-api/models"
     "redrepo-api/dbase"
-    "redrepo-api/handlers"
+    "redrepo-api/errors"
 	"encoding/json"
 	"fmt"
 )
 
 type AccountService struct {
 	BaseService
-    createAccount		gorest.EndPoint `method:"POST"		path:"/signup"   					        postdata:"SignUpParameters"`
+    createAccount		gorest.EndPoint `method:"POST"		path:"/signup"   					        postdata:"SignUpParam"`
     retrieveAccount 	gorest.EndPoint	`method:"GET"		path:"/account/{accountId:string}" 	        output:"AccountOutput"`
     retrieveSettings    gorest.EndPoint `method:"GET"       path:"/account/{accountId:string}/settings" output:"AccountSettingOutput"`
-    updateAccount 		gorest.EndPoint	`method:"PUT"		path:"/account/" 					        postdata:"AccountSettingParameters"`
+    updateAccount 		gorest.EndPoint	`method:"PUT"		path:"/account/" 					        postdata:"AccountSettingParam"`
     deleteAccount		gorest.EndPoint	`method:"DELETE"	path:"/account/{accountId:string}"`	
+    verifyAccount       gorest.EndPoint `method:"POST"      path:"/account/verify"                      postdata:"VerificationParam"`
 }
 
-func (service AccountService) CreateAccount(param models.SignUpParameters) {
-    responseCode := handlers.BAD_REQUEST
-    responseString := "{message:\"Bad Request\"}"
-
+func (service AccountService) CreateAccount(param models.SignUpParam) {
+    responseString := []byte("")
+    responseCode := errors.INTERNAL_SERVER_ERROR
     dbmap := dbase.OpenDatabase()
     var accounts []dbase.Account
     _, err := dbmap.Select(&accounts, "select * from accounts")
-    fmt.Printf("database error: %+v\n", err)
-    
-    if err == nil {
-        responseCode = handlers.SUCCESS
-        responseString = "{message:\"Success\"}"
+
+    if err != nil {
+        response := new(models.GeneralOutput)
+        response.Message = "Request completed"
+        jsonData, _ := json.Marshal(response)
+        responseString = jsonData
+        responseCode = 200
     } else {
-        responseCode = handlers.DATABASE_SERVER_ERROR
-        responseString = "{message:\"Database Server Error\"}"
+        response := new(errors.ErrorOutput)
+        response.Code = errors.INTERNAL_SERVER_ERROR
+        response.Message = "Internal server error"
+        jsonData, _ := json.Marshal(response)
+        responseString = jsonData
+        responseCode = response.Code
     }
-    // responseString, err := json.Marshal(param)
-    // responseCode := 400
-    // if err == nil { responseCode = 200 }
-    // if responseCode == 200 {
-    //     fmt.Printf("parameters: %+v\n", param)
-    //     fmt.Printf("accounts: %+v\n", accounts)
-    //     for i:=0; i < len(accounts); i++ {
-    //         account := accounts[i]
-    //         fmt.Println(account.Id)
-    //         fmt.Println(account.FirstName)
-    //     }
-    // } else {
-    //     fmt.Println(err)
-    // }
-    // dbase.CloseDatabase(dbmap)
+   
+    dbase.CloseDatabase(dbmap)
+    
     service.ResponseBuilder().SetResponseCode(responseCode)
     service.ResponseBuilder().Write([]byte(responseString))
     return
@@ -82,10 +76,14 @@ func (service AccountService) RetrieveSettings(accountId string) (output models.
     return
 }
 
-func (service AccountService) UpdateAccount(param models.AccountSettingParameters) {
+func (service AccountService) UpdateAccount(param models.AccountSettingParam) {
  
 }
 
 func (service AccountService) DeleteAccount(accountId string) {
    
+}
+
+func (service AccountService) VerifyAccount(param models.VerificationParam) {
+    
 }

@@ -4,13 +4,13 @@
 
 package models
 
-type SignInParameters struct {
+type SignInParam struct {
 	BaseParamModel
 	Username	string	`json:"username"`
 	Password	string	`json:"password"`
 }
 
-type SignUpParameters struct {
+type SignUpParam struct {
 	BaseParamModel
 	FirstName 	string	`json:"first_name"`
 	LastName 	string	`json:"last_name"`
@@ -22,8 +22,14 @@ type SignUpParameters struct {
 	Longitude	float32	`json:"longitude"`
 }
 
-type AccountSettingParameters struct {
-	SignUpParameters
+type AccountSettingParam struct {
+	SignUpParam
 	ConnectedToFacebook int `json:"connected_to_facebook"`
 	ConnectedToTwitter  int `json:"connected_to_twitter"`
+}
+
+type VerificationParam struct {
+	BaseParamModel
+	Username string `json:"username"`
+	Code     string `json:"code"`
 }
