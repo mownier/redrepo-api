@@ -6,6 +6,7 @@ package services
 
 import ( 
 	"code.google.com/p/gorest"
+    "code.google.com/p/go.crypto/bcrypt"
 	"redrepo-api/models"
     "redrepo-api/dbase"
     "redrepo-api/errors"
@@ -29,7 +30,15 @@ func (service AccountService) CreateAccount(param models.SignUpParam) {
     dbmap := dbase.OpenDatabase()
     var accounts []dbase.Account
     _, err := dbmap.Select(&accounts, "select * from accounts")
-
+    pass := []byte(param.Password)
+    ctext, err := bcrypt.GenerateFromPassword(pass, bcrypt.DefaultCost)
+    success := bcrypt.CompareHashAndPassword(ctext, pass)
+    if success == nil {
+        fmt.Println("Password matched")
+    } else {
+        fmt.Println("Password did not match")
+    }
+    fmt.Println(string(ctext))
     if err != nil {
         response := new(models.GeneralOutput)
         response.Message = "Request completed"
