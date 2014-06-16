@@ -24,12 +24,12 @@ type SignUpParam struct {
 
 type AccountSettingParam struct {
 	SignUpParam
-	ConnectedToFacebook int `json:"connected_to_facebook"`
-	ConnectedToTwitter  int `json:"connected_to_twitter"`
+	ConnectedToFacebook 	int `json:"connected_to_facebook"`
+	ConnectedToTwitter 		int `json:"connected_to_twitter"`
 }
 
 type VerificationParam struct {
 	BaseParamModel
-	Username string `json:"username"`
-	Code     string `json:"code"`
+	Username 	string `json:"username"`
+	Code 		string `json:"code"`
 }

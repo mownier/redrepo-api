@@ -5,69 +5,62 @@
 package services
 
 import ( 
-	"code.google.com/p/gorest"
-    "code.google.com/p/go.crypto/bcrypt"
-	"redrepo-api/models"
+    "code.google.com/p/gorest"
+    // "code.google.com/p/go.crypto/bcrypt"
+    "redrepo-api/models"
     "redrepo-api/dbase"
     "redrepo-api/errors"
-	"encoding/json"
-	"fmt"
+    "encoding/json"
+    "fmt"
 )
 
 type AccountService struct {
-	BaseService
-    createAccount		gorest.EndPoint `method:"POST"		path:"/signup"   					        postdata:"SignUpParam"`
-    retrieveAccount 	gorest.EndPoint	`method:"GET"		path:"/account/{accountId:string}" 	        output:"AccountOutput"`
+    BaseService
+    createAccount       gorest.EndPoint `method:"POST"      path:"/signup"                              postdata:"SignUpParam"`
+    retrieveAccount     gorest.EndPoint `method:"GET"       path:"/account/{accountId:string}"          output:"AccountOutput"`
     retrieveSettings    gorest.EndPoint `method:"GET"       path:"/account/{accountId:string}/settings" output:"AccountSettingOutput"`
-    updateAccount 		gorest.EndPoint	`method:"PUT"		path:"/account/" 					        postdata:"AccountSettingParam"`
-    deleteAccount		gorest.EndPoint	`method:"DELETE"	path:"/account/{accountId:string}"`	
+    updateAccount       gorest.EndPoint `method:"PUT"       path:"/account/"                            postdata:"AccountSettingParam"`
+    deleteAccount       gorest.EndPoint `method:"DELETE"    path:"/account/{accountId:string}"`  
     verifyAccount       gorest.EndPoint `method:"POST"      path:"/account/verify"                      postdata:"VerificationParam"`
 }
 
 func (service AccountService) CreateAccount(param models.SignUpParam) {
-    responseString := []byte("")
+    responseData := []byte("")
     responseCode := errors.INTERNAL_SERVER_ERROR
+
     dbmap := dbase.OpenDatabase()
     var accounts []dbase.Account
-    _, err := dbmap.Select(&accounts, "select * from accounts")
-    pass := []byte(param.Password)
-    ctext, err := bcrypt.GenerateFromPassword(pass, bcrypt.DefaultCost)
-    success := bcrypt.CompareHashAndPassword(ctext, pass)
-    if success == nil {
-        fmt.Println("Password matched")
-    } else {
-        fmt.Println("Password did not match")
-    }
-    fmt.Println(string(ctext))
+    _, err := dbmap.Select(&accounts, "select id from accounts where") 
+
     if err != nil {
         response := new(models.GeneralOutput)
         response.Message = "Request completed"
         jsonData, _ := json.Marshal(response)
-        responseString = jsonData
+        responseData = jsonData
         responseCode = 200
     } else {
         response := new(errors.ErrorOutput)
         response.Code = errors.INTERNAL_SERVER_ERROR
         response.Message = "Internal server error"
         jsonData, _ := json.Marshal(response)
-        responseString = jsonData
+        responseData = jsonData
         responseCode = response.Code
     }
    
     dbase.CloseDatabase(dbmap)
     
     service.ResponseBuilder().SetResponseCode(responseCode)
-    service.ResponseBuilder().Write([]byte(responseString))
+    service.ResponseBuilder().Write(responseData)
     return
 }
 
 func (service AccountService) RetrieveAccount(accountId string) (output models.AccountOutput) {
-	// Pseudocode
-	// 1. Find the accountId does exist
-	// 1.1 If does exist, fire back a response with the info of the account
-	// 1.2 Else, fire back a response telling that the account does not exist
-	
-	jsonString := `{"id":"1","first_name":"Mounir","last_name":"Ybanez","email":"rinuom91@gmail.com","username":"mownier","date_joined":"May 24, 2014","latitude":123,"longitude":10,"connected_to_facebook":0,"connected_to_twitter":0}`
+    // Pseudocode
+    // 1. Find the accountId does exist
+    // 1.1 If does exist, fire back a response with the info of the account
+    // 1.2 Else, fire back a response telling that the account does not exist
+    
+    jsonString := `{"id":"1","first_name":"Mounir","last_name":"Ybanez","email":"rinuom91@gmail.com","username":"mownier","date_joined":"May 24, 2014","latitude":123,"longitude":10,"connected_to_facebook":0,"connected_to_twitter":0}`
     err := json.Unmarshal([]byte(jsonString), &output)
     responseCode := 400
     if err == nil {
@@ -78,7 +71,7 @@ func (service AccountService) RetrieveAccount(accountId string) (output models.A
     }
 
     service.ResponseBuilder().SetResponseCode(responseCode)
-	return
+    return
 }
 
 func (service AccountService) RetrieveSettings(accountId string) (output models.AccountSettingOutput) {
