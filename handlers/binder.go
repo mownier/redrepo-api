@@ -4,22 +4,36 @@ import (
     "code.google.com/p/go.crypto/bcrypt"
 	"redrepo-api/dbase/entries"
 	"redrepo-api/parameter"
+    "redrepo-api/response"
+    "strconv"
 	"time"
 	)
 
-func Bind(entry *entries.Account, param parameter.SignUp) {
-	entry.FirstName = param.FirstName
-    entry.LastName = param.LastName
-    entry.Email = param.Email
+func BindAccountEntryWithSignUpParameter(account *entries.Account, param parameter.SignUp) {
+	account.FirstName = param.FirstName
+    account.LastName = param.LastName
+    account.Email = param.Email
 
     pass, _ := bcrypt.GenerateFromPassword([]byte(param.Password), bcrypt.DefaultCost)
-    entry.Password = string(pass)
+    account.Password = string(pass)
     
-    entry.Username = param.Username
-    entry.BloodType = param.BloodType
-    entry.Latitude = param.Latitude
-    entry.Longitude = param.Longitude
+    account.Username = param.Username
+    account.BloodType = param.BloodType
+    account.Latitude = param.Latitude
+    account.Longitude = param.Longitude
     
     now := time.Now()
-    entry.DateJoined = now.Format(time.RFC3339)
+    account.DateJoined = now.Format(time.RFC3339)
+}
+
+func BindAccountResponseWithAccountEntry(response *response.Account, account entries.Account) {
+    response.Id = strconv.Itoa(account.Id)
+    response.FirstName = account.FirstName
+    response.LastName = account.LastName
+    response.Email = account.Email
+    response.Username = account.Username
+    response.JoinedDate = account.DateJoined
+    response.BloodType = account.BloodType
+    response.Latitude = account.Latitude
+    response.Longitude = account.Longitude
 }

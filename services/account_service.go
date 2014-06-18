@@ -45,29 +45,49 @@ func (service AccountService) CreateAccount(param parameter.SignUp) {
             if selectError == nil {
                 if len(accounts) == 0 {
                     account := new(entries.Account)
-                    handlers.Bind(account, param)
+                    handlers.BindAccountEntryWithSignUpParameter(account, param)
 
                     inserError := dbmap.Insert(account)
-                    if (inserError == nil) {
-                        accounts = nil
-                        _, selectError := dbmap.Select(&accounts, "select * from accounts where username = :username or email = :email limit 1", map[string]interface{}{
-                            "username": param.Username,
-                            "email": param.Email,
-                            }) 
-                        if selectError == nil {
-                            fmt.Printf("accounts: %+v", accounts)
-                            resp := new(response.Account)
-                            respData, respCode = resp.GetJSONResponseData()
+                    if inserError == nil {
+                        accountSetting := new(entries.AccountSetting)
+                        accountSetting.Username = account.Username
+                        inserError = dbmap.Insert(accountSetting)
+                        if inserError == nil {
+                            accounts = nil
+                            _, selectError := dbmap.Select(&accounts, "select * from accounts where username = :username or email = :email limit 1", map[string]interface{}{
+                                "username": param.Username,
+                                "email": param.Email,
+                                }) 
+                            if selectError == nil {
+                                if len(accounts) == 1 {
+                                        account := accounts[0]
+                                        response := new(response.Account)
+                                        handlers.BindAccountResponseWithAccountEntry(response, account)
+                                        respData, respCode = response.GetJSONResponseData()
+                                        fmt.Printf("success: Responded with json: %s", string(respData))
+                                } else {
+                                    fmt.Println("error: Cannot retrieve newly inserted account.")
+                                    respData, respCode = errors.ErrorResponseData(errors.ACCOUNT_ALREADY_EXIST)
+                                }
+                            } else {
+                                fmt.Printf("select error: %+v\n", selectError)
+                                respData, respCode = errors.ThrowInternalServerErrorResponse() 
+                            }
                         } else {
-                            fmt.Printf("select error: %+v\n", selectError)
-                            respData, respCode = errors.ThrowInternalServerErrorResponse() 
+                            _, deleteError := dbmap.Exec("delete from accounts where username=?", param.Username)
+                            if deleteError == nil {
+                                fmt.Printf("insert error: %+v\n", inserError)
+                            } else {
+                                fmt.Printf("delete error: %+v\n", deleteError)
+                            }
+                            respData, respCode = errors.ThrowInternalServerErrorResponse()
                         }
                     } else {
                         fmt.Printf("insert error: %+v\n", inserError)
                         respData, respCode = errors.ThrowInternalServerErrorResponse()
                     }
                 } else {
-                    fmt.Printf("error: Account already exist.\n")
+                    fmt.Println("error: Account already exist.")
                     respData, respCode = errors.ErrorResponseData(errors.ACCOUNT_ALREADY_EXIST)
                 }
             } else {

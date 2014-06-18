@@ -35,6 +35,7 @@ func OpenDatabase() (*gorp.DbMap, bool) {
 	// construct a gorp DbMap
 	dbmap := &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{"InnoDB", "UTF8"}}
 	dbmap.AddTableWithName(entries.Account{}, "accounts")
+	dbmap.AddTableWithName(entries.AccountSetting{}, "account_settings")
 
 	return dbmap, false
 }

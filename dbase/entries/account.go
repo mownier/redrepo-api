@@ -1,7 +1,7 @@
 package entries
 
 type Account struct {
-	Id			int32	`db:"id"`
+	Id			int		`db:"id"`
 	FirstName 	string 	`db:"first_name"`
 	LastName 	string 	`db:"last_name"`
 	Email 		string 	`db:"email"`
