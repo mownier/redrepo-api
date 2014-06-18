@@ -4,81 +4,101 @@
 
 package services
 
-import ( 
+import (
     "code.google.com/p/gorest"
-    // "code.google.com/p/go.crypto/bcrypt"
-    "redrepo-api/models"
+    "redrepo-api/parameter"
+    "redrepo-api/response"
     "redrepo-api/dbase"
+    "redrepo-api/dbase/entries"
+    "redrepo-api/handlers"
     "redrepo-api/errors"
-    "encoding/json"
     "fmt"
-)
+    )
 
 type AccountService struct {
     BaseService
-    createAccount       gorest.EndPoint `method:"POST"      path:"/signup"                              postdata:"SignUpParam"`
-    retrieveAccount     gorest.EndPoint `method:"GET"       path:"/account/{accountId:string}"          output:"AccountOutput"`
-    retrieveSettings    gorest.EndPoint `method:"GET"       path:"/account/{accountId:string}/settings" output:"AccountSettingOutput"`
-    updateAccount       gorest.EndPoint `method:"PUT"       path:"/account/"                            postdata:"AccountSettingParam"`
+    createAccount       gorest.EndPoint `method:"POST"      path:"/signup"                              postdata:"SignUp"`
+    retrieveAccount     gorest.EndPoint `method:"GET"       path:"/account/{accountId:string}"          output:"Account"`
+    retrieveSettings    gorest.EndPoint `method:"GET"       path:"/account/{accountId:string}/settings" output:"AccountSetting"`
+    updateAccount       gorest.EndPoint `method:"PUT"       path:"/account/"                            postdata:"AccountSetting"`
     deleteAccount       gorest.EndPoint `method:"DELETE"    path:"/account/{accountId:string}"`  
-    verifyAccount       gorest.EndPoint `method:"POST"      path:"/account/verify"                      postdata:"VerificationParam"`
+    verifyAccount       gorest.EndPoint `method:"POST"      path:"/account/verify"                      postdata:"Verification"`
 }
 
-func (service AccountService) CreateAccount(param models.SignUpParam) {
-    responseData := []byte("")
-    responseCode := errors.INTERNAL_SERVER_ERROR
-
-    dbmap := dbase.OpenDatabase()
-    var accounts []dbase.Account
-    _, err := dbmap.Select(&accounts, "select id from accounts where") 
-
-    if err != nil {
-        response := new(models.GeneralOutput)
-        response.Message = "Request completed"
-        jsonData, _ := json.Marshal(response)
-        responseData = jsonData
-        responseCode = 200
-    } else {
-        response := new(errors.ErrorOutput)
-        response.Code = errors.INTERNAL_SERVER_ERROR
-        response.Message = "Internal server error"
-        jsonData, _ := json.Marshal(response)
-        responseData = jsonData
-        responseCode = response.Code
-    }
-   
-    dbase.CloseDatabase(dbmap)
+func (service AccountService) CreateAccount(param parameter.SignUp) {    
+    var respData []byte
+    var respCode int
     
-    service.ResponseBuilder().SetResponseCode(responseCode)
-    service.ResponseBuilder().Write(responseData)
-    return
-}
-
-func (service AccountService) RetrieveAccount(accountId string) (output models.AccountOutput) {
-    // Pseudocode
-    // 1. Find the accountId does exist
-    // 1.1 If does exist, fire back a response with the info of the account
-    // 1.2 Else, fire back a response telling that the account does not exist
-    
-    jsonString := `{"id":"1","first_name":"Mounir","last_name":"Ybanez","email":"rinuom91@gmail.com","username":"mownier","date_joined":"May 24, 2014","latitude":123,"longitude":10,"connected_to_facebook":0,"connected_to_twitter":0}`
-    err := json.Unmarshal([]byte(jsonString), &output)
-    responseCode := 400
-    if err == nil {
-        fmt.Printf("%+v\n", output)
-        responseCode = 200
+    // Check if the given parameters have errors
+    if param.HasErrors() == true {
+        respData, respCode = errors.ErrorResponseData(errors.INVALID_PARAMETER_VALUE)
     } else {
-        fmt.Println(err)
+        dbmap, connectionError := dbase.OpenDatabase()
+        if (!connectionError) {
+             var accounts []entries.Account
+
+            _, selectError := dbmap.Select(&accounts, "select id from accounts where username = :username or email = :email limit 1", map[string]interface{}{
+                "username": param.Username,
+                "email": param.Email,
+                }) 
+
+            if selectError == nil {
+                if len(accounts) == 0 {
+                    account := new(entries.Account)
+                    handlers.Bind(account, param)
+
+                    inserError := dbmap.Insert(account)
+                    if (inserError == nil) {
+                        accounts = nil
+                        _, selectError := dbmap.Select(&accounts, "select * from accounts where username = :username or email = :email limit 1", map[string]interface{}{
+                            "username": param.Username,
+                            "email": param.Email,
+                            }) 
+                        if selectError == nil {
+                            fmt.Printf("accounts: %+v", accounts)
+                            resp := new(response.Account)
+                            respData, respCode = resp.GetJSONResponseData()
+                        } else {
+                            fmt.Printf("select error: %+v\n", selectError)
+                            respData, respCode = errors.ThrowInternalServerErrorResponse() 
+                        }
+                    } else {
+                        fmt.Printf("insert error: %+v\n", inserError)
+                        respData, respCode = errors.ThrowInternalServerErrorResponse()
+                    }
+                } else {
+                    fmt.Printf("error: Account already exist.\n")
+                    respData, respCode = errors.ErrorResponseData(errors.ACCOUNT_ALREADY_EXIST)
+                }
+            } else {
+                fmt.Printf("select error: %+v\n", selectError)
+                respData, respCode = errors.ThrowInternalServerErrorResponse()
+            }
+
+            dbase.CloseDatabase(dbmap)
+
+        } else {
+            respData, respCode = errors.ThrowInternalServerErrorResponse()
+        }
+       
     }
 
-    service.ResponseBuilder().SetResponseCode(responseCode)
+    service.ResponseBuilder().SetResponseCode(respCode)
+    service.ResponseBuilder().Write(respData)
+
     return
 }
 
-func (service AccountService) RetrieveSettings(accountId string) (output models.AccountSettingOutput) {
+func (service AccountService) RetrieveAccount(accountId string) (resp response.Account) {
+    service.ResponseBuilder().SetResponseCode(200)
     return
 }
 
-func (service AccountService) UpdateAccount(param models.AccountSettingParam) {
+func (service AccountService) RetrieveSettings(accountId string) (resp response.AccountSetting) {
+    return
+}
+
+func (service AccountService) UpdateAccount(param parameter.AccountSetting) {
  
 }
 
@@ -86,6 +106,6 @@ func (service AccountService) DeleteAccount(accountId string) {
    
 }
 
-func (service AccountService) VerifyAccount(param models.VerificationParam) {
+func (service AccountService) VerifyAccount(param parameter.Verification) {
     
 }
