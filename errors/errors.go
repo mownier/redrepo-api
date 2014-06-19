@@ -33,7 +33,7 @@ func ErrorResponseData(errorCode int) ([]byte, int) {
     errorResponse.Code = errorCode
     errorResponse.Message = ErrorMessage(errorCode)
     jsonData, _ := json.Marshal(errorResponse)
-	return jsonData, errorCode
+	return jsonData, http.StatusBadRequest
 }
 
 func ThrowInternalServerErrorResponse() ([]byte, int) {

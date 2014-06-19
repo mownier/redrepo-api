@@ -21,10 +21,10 @@ func (param BaseParam) IsEmpty(value string) bool {
 }
 
 func (param BaseParam) IsAlphaNumeric(value string) bool {
-	_, err := regexp.Compile("[^A-Za-z0-9]+")
-    if err == nil { 
-    	return true 
-    } else { 
-    	return false 
-    }
+	re := regexp.MustCompile("[0-9A-Za-z]")
+	return re.Match([]byte(value))
+}
+func (param BaseParam) IsAlpha(value string) bool {
+	re := regexp.MustCompile("[A-Za-z]")
+	return re.Match([]byte(value))
 }
