@@ -39,3 +39,43 @@ func BindAccountResponseWithResult(response *response.SignUp, result *joins.Acco
     response.Longitude = result.Longitude
     response.VerifiedAccount = result.VerifiedAccount
 }
+
+func BindAccountSettingResponseWithResult(response *response.AccountSetting, result *joins.AccountSettingJoinResult) {
+    response.Id = strconv.Itoa(result.Id)
+    response.FirstName = result.FirstName
+    response.LastName = result.LastName
+    response.Email = result.Email
+    response.Username = result.Username
+    response.JoinedDate = result.DateJoined
+    response.BloodType = result.BloodType
+    response.Latitude = result.Latitude
+    response.Longitude = result.Longitude
+    response.ConnectedToTwitter = result.ConnectedToTwitter
+    response.ConnectedToFacebook = result.ConnectedToFacebook
+}
+
+func BindAccountResponse(response *response.Account, result *tables.Account) {
+    response.Id = strconv.Itoa(result.Id)
+    response.FirstName = result.FirstName
+    response.LastName = result.LastName
+    response.Email = result.Email
+    response.Username = result.Username
+    response.JoinedDate = result.DateJoined
+    response.BloodType = result.BloodType
+    response.Latitude = result.Latitude
+    response.Longitude = result.Longitude
+}
+
+func BindAccountSettingResponse(response *response.AccountSetting, result *joins.AccountSettingJoinResult) {
+    response.Id = strconv.Itoa(result.Id)
+    response.FirstName = result.FirstName
+    response.LastName = result.LastName
+    response.Email = result.Email
+    response.Username = result.Username
+    response.JoinedDate = result.DateJoined
+    response.BloodType = result.BloodType
+    response.Latitude = result.Latitude
+    response.Longitude = result.Longitude
+    response.ConnectedToFacebook = result.ConnectedToFacebook
+    response.ConnectedToTwitter = result.ConnectedToTwitter
+}

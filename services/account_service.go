@@ -62,7 +62,7 @@ func (service AccountService) CreateAccount(param parameter.SignUp) {
                             inserError = dbmap.Insert(verificationCode)
                             if inserError == nil {
                                 accountSettingJoinResult := new(joins.AccountSettingJoinResult)
-                                selectError := dbmap.SelectOne(accountSettingJoinResult, "select a.*, s.connected_to_facebook, s.connected_to_twitter, s.verified_account from accounts a, account_settings s WHERE a.username=s.username LIMIT 1;") 
+                                selectError := dbmap.SelectOne(accountSettingJoinResult, "select a.*, s.connected_to_facebook, s.connected_to_twitter, s.verified_account from accounts a, account_settings s WHERE a.username=?", account.Username) 
                                 if selectError == nil {
                                     response := new(response.SignUp)
                                     handlers.BindAccountResponseWithResult(response, accountSettingJoinResult)
@@ -118,11 +118,51 @@ func (service AccountService) CreateAccount(param parameter.SignUp) {
 }
 
 func (service AccountService) RetrieveAccount(accountId string) (resp response.Account) {
-    service.ResponseBuilder().SetResponseCode(200)
+    var respData []byte
+    var respCode int
+
+    dbmap, connectionError := dbase.OpenDatabase()
+    if (!connectionError) {
+        account := new(tables.Account)
+        selectError := dbmap.SelectOne(account, "select * from accounts where id=?", accountId) 
+        if selectError == nil {
+            response := new(response.Account)
+            handlers.BindAccountResponse(response, account)
+            respData, respCode = response.GetJSONResponseData()
+            fmt.Printf("success: Responded with json: %s", string(respData))
+        } else {
+            fmt.Printf("select error: %+v\n", selectError)
+            respData, respCode = errors.ErrorResponseData(errors.ACCOUNT_NOT_FOUND) 
+        }
+    } else {
+        respData, respCode = errors.ThrowInternalServerErrorResponse()
+    }
+    service.ResponseBuilder().SetResponseCode(respCode)
+    service.ResponseBuilder().Write(respData).Overide(true)
     return
 }
 
 func (service AccountService) RetrieveSettings(accountId string) (resp response.AccountSetting) {
+    var respData []byte
+    var respCode int
+    dbmap, connectionError := dbase.OpenDatabase()
+    if (!connectionError) {
+        accountSettingJoinResult := new(joins.AccountSettingJoinResult)
+        selectError := dbmap.SelectOne(accountSettingJoinResult, "select a.*, s.connected_to_facebook, s.connected_to_twitter, s.verified_account from accounts a, account_settings s where a.id=?", accountId) 
+        if selectError == nil {
+            response := new(response.AccountSetting)
+            handlers.BindAccountSettingResponse(response, accountSettingJoinResult)
+            respData, respCode = response.GetJSONResponseData()
+            fmt.Printf("success: Responded with json: %s", string(respData))
+        } else {
+            fmt.Printf("select error: %+v\n", selectError)
+            respData, respCode = errors.ErrorResponseData(errors.ACCOUNT_NOT_FOUND) 
+        }
+    } else {
+        respData, respCode = errors.ThrowInternalServerErrorResponse()
+    }
+    service.ResponseBuilder().SetResponseCode(respCode)
+    service.ResponseBuilder().Write(respData).Overide(true)
     return
 }
 

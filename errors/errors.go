@@ -12,6 +12,7 @@ import (
 const (
 	ACCOUNT_ALREADY_EXIST = 700
 	INVALID_PARAMETER_VALUE = 701
+	ACCOUNT_NOT_FOUND = 702
 )
 
 type ErrorResponse struct {
@@ -20,8 +21,9 @@ type ErrorResponse struct {
 }
 
 var errorMessage = map[int]string {
-	700: "Account already exist.",
-	701: "Missing parameter or invalid value.",
+	ACCOUNT_ALREADY_EXIST: "Account already exist.",
+	INVALID_PARAMETER_VALUE: "Missing parameter or invalid value.",
+	ACCOUNT_NOT_FOUND: "Account not found.",
 }
 
 func ErrorMessage(errorCode int) string {
