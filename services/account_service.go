@@ -6,10 +6,12 @@ package services
 
 import (
     "code.google.com/p/gorest"
+    "github.com/dchest/uniuri"
     "redrepo-api/parameter"
     "redrepo-api/response"
     "redrepo-api/dbase"
-    "redrepo-api/dbase/entries"
+    "redrepo-api/dbase/tables"
+    "redrepo-api/dbase/joins"
     "redrepo-api/handlers"
     "redrepo-api/errors"
     "fmt"
@@ -35,7 +37,7 @@ func (service AccountService) CreateAccount(param parameter.SignUp) {
     } else {
         dbmap, connectionError := dbase.OpenDatabase()
         if (!connectionError) {
-             var accounts []entries.Account
+             var accounts []tables.Account
 
             _, selectError := dbmap.Select(&accounts, "select id from accounts where username = :username or email = :email limit 1", map[string]interface{}{
                 "username": param.Username,
@@ -44,34 +46,40 @@ func (service AccountService) CreateAccount(param parameter.SignUp) {
 
             if selectError == nil {
                 if len(accounts) == 0 {
-                    account := new(entries.Account)
+                    account := new(tables.Account)
                     handlers.BindAccountEntryWithSignUpParameter(account, param)
 
                     inserError := dbmap.Insert(account)
                     if inserError == nil {
-                        accountSetting := new(entries.AccountSetting)
+                        accountSetting := new(tables.AccountSetting)
                         accountSetting.Username = account.Username
                         inserError = dbmap.Insert(accountSetting)
                         if inserError == nil {
-                            accounts = nil
-                            _, selectError := dbmap.Select(&accounts, "select * from accounts where username = :username or email = :email limit 1", map[string]interface{}{
-                                "username": param.Username,
-                                "email": param.Email,
-                                }) 
-                            if selectError == nil {
-                                if len(accounts) == 1 {
-                                        account := accounts[0]
-                                        response := new(response.Account)
-                                        handlers.BindAccountResponseWithAccountEntry(response, account)
-                                        respData, respCode = response.GetJSONResponseData()
-                                        fmt.Printf("success: Responded with json: %s", string(respData))
+                            verificationCode := new(tables.VerificationCode)
+                            verificationCode.Username = account.Username
+                            verificationCode.Status = "ACTIVE"
+                            verificationCode.Code = uniuri.NewLen(6)
+                            inserError = dbmap.Insert(verificationCode)
+                            if inserError == nil {
+                                accountSettingJoinResult := new(joins.AccountSettingJoinResult)
+                                selectError := dbmap.SelectOne(accountSettingJoinResult, "select a.*, s.connected_to_facebook, s.connected_to_twitter, s.verified_account from accounts a, account_settings s WHERE a.username=s.username LIMIT 1;") 
+                                if selectError == nil {
+                                    response := new(response.SignUp)
+                                    handlers.BindAccountResponseWithResult(response, accountSettingJoinResult)
+                                    respData, respCode = response.GetJSONResponseData()
+                                    fmt.Printf("success: Responded with json: %s", string(respData))
                                 } else {
-                                    fmt.Println("error: Cannot retrieve newly inserted account.")
-                                    respData, respCode = errors.ErrorResponseData(errors.ACCOUNT_ALREADY_EXIST)
+                                    fmt.Printf("select error: %+v\n", selectError)
+                                    respData, respCode = errors.ThrowInternalServerErrorResponse() 
                                 }
                             } else {
-                                fmt.Printf("select error: %+v\n", selectError)
-                                respData, respCode = errors.ThrowInternalServerErrorResponse() 
+                                _, deleteError := dbmap.Exec("delete from accounts where username=?", param.Username)
+                                if deleteError == nil {
+                                    fmt.Printf("insert error: %+v\n", inserError)
+                                } else {
+                                    fmt.Printf("delete error: %+v\n", deleteError)
+                                }
+                                respData, respCode = errors.ThrowInternalServerErrorResponse()
                             }
                         } else {
                             _, deleteError := dbmap.Exec("delete from accounts where username=?", param.Username)

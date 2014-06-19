@@ -1,4 +1,4 @@
-package entries
+package tables
 
 type Account struct {
 	Id			int		`db:"id"`

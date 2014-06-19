@@ -2,14 +2,15 @@ package handlers
 
 import (
     "code.google.com/p/go.crypto/bcrypt"
-	"redrepo-api/dbase/entries"
+	"redrepo-api/dbase/tables"
+    "redrepo-api/dbase/joins"
 	"redrepo-api/parameter"
     "redrepo-api/response"
     "strconv"
 	"time"
 	)
 
-func BindAccountEntryWithSignUpParameter(account *entries.Account, param parameter.SignUp) {
+func BindAccountEntryWithSignUpParameter(account *tables.Account, param parameter.SignUp) {
 	account.FirstName = param.FirstName
     account.LastName = param.LastName
     account.Email = param.Email
@@ -26,14 +27,15 @@ func BindAccountEntryWithSignUpParameter(account *entries.Account, param paramet
     account.DateJoined = now.Format(time.RFC3339)
 }
 
-func BindAccountResponseWithAccountEntry(response *response.Account, account entries.Account) {
-    response.Id = strconv.Itoa(account.Id)
-    response.FirstName = account.FirstName
-    response.LastName = account.LastName
-    response.Email = account.Email
-    response.Username = account.Username
-    response.JoinedDate = account.DateJoined
-    response.BloodType = account.BloodType
-    response.Latitude = account.Latitude
-    response.Longitude = account.Longitude
+func BindAccountResponseWithResult(response *response.SignUp, result *joins.AccountSettingJoinResult) {
+    response.Id = strconv.Itoa(result.Id)
+    response.FirstName = result.FirstName
+    response.LastName = result.LastName
+    response.Email = result.Email
+    response.Username = result.Username
+    response.JoinedDate = result.DateJoined
+    response.BloodType = result.BloodType
+    response.Latitude = result.Latitude
+    response.Longitude = result.Longitude
+    response.VerifiedAccount = result.VerifiedAccount
 }
