@@ -2,7 +2,7 @@ package parameter
 
 import (
 	"regexp"
-	"fmt"
+	"errors"
 	)
 
 type SignUp struct {
@@ -19,63 +19,78 @@ type SignUp struct {
 
 
 
-func (param SignUp) HasErrors() bool {
-	return !(param.isValidFirstName() && 
-			param.isValidLastName() && 
-			param.isValidEmail() && 
-			param.isValidUserName() && 
-			param.isValidBloodType() &&
-			param.isValidCoordinate())
+func (param SignUp) ValidateValues() error {
+	error := param.validateFirstName()
+	if error == nil {
+		error = param.validateLastName()
+		if error == nil {
+			error = param.validateEmail()
+			if error == nil {
+				error = param.validateUsername()
+				if error == nil {
+					error = param.validateBloodType()
+					if error == nil {
+						error = param.validateCoordinate()
+					}
+				}
+			}
+		}
+	}
+	return error
 }
 
-func (param SignUp) isValidFirstName() bool {
+func (param SignUp) validateFirstName() error {
 	valid := !param.BaseParam.IsEmpty(param.FirstName) && 
 				param.BaseParam.IsAlpha(param.FirstName)
-	
-	if valid == false {
-		fmt.Println("Invalid first name.")
+	if valid == true {
+		return nil
+	} else {
+		return errors.New("Invalid first name.")
 	}
-	return valid
 }
 
-func (param SignUp) isValidLastName() bool {
+func (param SignUp) validateLastName() error {
 	valid := !param.BaseParam.IsEmpty(param.LastName) && 
 				param.BaseParam.IsAlpha(param.LastName)
-	if valid == false {
-		fmt.Println("Invalid last name.")
+	if valid == true {
+		return nil
+	} else {
+		return errors.New("Invalid last name.")
 	}
-	return valid
 }
 
-func (param SignUp) isValidEmail() bool {
+func (param SignUp) validateEmail() error {
 	re := regexp.MustCompile(".+@.+\\..+")
 	valid := re.Match([]byte(param.Email))
-	if valid == false {
-		fmt.Println("Invalid email.")
+	if valid == true {
+		return nil
+	} else {
+		return errors.New("Invalid email.")
 	}
-	return valid
 }
 
-func (param SignUp) isValidUserName() bool {
+func (param SignUp) validateUsername() error {
 	valid := !param.BaseParam.IsEmpty(param.FirstName) && 
 				param.BaseParam.IsAlphaNumeric(param.FirstName)
-	if valid == false {
-		fmt.Println("Invalid username.")
+	if valid == true {
+		return nil
+	} else {
+		return errors.New("Invalid username.")
 	}
-	return valid
 }
 
-func (param SignUp) isValidBloodType() bool {
-	return true
+func (param SignUp) validateBloodType() error {
+	return nil
 }
 
-func (param SignUp) isValidCoordinate() bool {
+func (param SignUp) validateCoordinate() error {
 	valid := (param.Latitude >= -90.0 && param.Latitude <= 90.0) &&
 				(param.Longitude >= -180.0 && param.Longitude <= 180.0)
-	if valid == false {
-		fmt.Println("Invalid coordinate.")
+	if valid == true {
+		return nil
+	} else {
+		return errors.New("Invalid coordinate.")
 	}
-	return valid
 }
 
 

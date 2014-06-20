@@ -10,15 +10,15 @@ import (
 	_ "github.com/go-sql-driver/mysql"
     "github.com/coopernurse/gorp"
     "fmt"
+    "errors"
 )
 
-func OpenDatabase() (*gorp.DbMap, bool) {
+func OpenDatabase() (*gorp.DbMap, error) {
 	// connect to db using standard Go database/sql API
     // use whatever database/sql driver you wish
     db, err := sql.Open("mysql", "mownier:mownier@tcp(localhost:3306)/redrepo")
 	if err != nil {
-		fmt.Println("Cannot establish database connection.")
-		return nil, true
+		return nil, errors.New("Cannot establish database connection.")
 	} else {
 		fmt.Println("Established database connection.")
 	}
@@ -26,8 +26,7 @@ func OpenDatabase() (*gorp.DbMap, bool) {
 	// Open doesn't open a connection. Validate DSN data:
 	err = db.Ping()
 	if err != nil {
-		fmt.Println("DSN data validation failed.")
-		return nil, true
+		return nil, errors.New("DSN data validation failed.")
 	} else {
 		fmt.Println("DSN data validation success.")
 	}
@@ -37,7 +36,7 @@ func OpenDatabase() (*gorp.DbMap, bool) {
 	dbmap.AddTableWithName(tables.Account{}, "accounts")
 	dbmap.AddTableWithName(tables.AccountSetting{}, "account_settings")
 	dbmap.AddTableWithName(tables.VerificationCode{}, "verification_codes")
-	return dbmap, false
+	return dbmap, nil
 }
 
 func CloseDatabase(dbmap *gorp.DbMap) {

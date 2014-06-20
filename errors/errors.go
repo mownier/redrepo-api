@@ -13,6 +13,8 @@ const (
 	ACCOUNT_ALREADY_EXIST = 700
 	INVALID_PARAMETER_VALUE = 701
 	ACCOUNT_NOT_FOUND = 702
+	CLIENT_NOT_ALLOWED = 703
+	NOT_AUTHORIZED = 704
 )
 
 type ErrorResponse struct {
@@ -24,6 +26,8 @@ var errorMessage = map[int]string {
 	ACCOUNT_ALREADY_EXIST: "Account already exist.",
 	INVALID_PARAMETER_VALUE: "Missing parameter or invalid value.",
 	ACCOUNT_NOT_FOUND: "Account not found.",
+	CLIENT_NOT_ALLOWED: "Client not allowed.",
+	NOT_AUTHORIZED: "Not authorized.",
 }
 
 func ErrorMessage(errorCode int) string {

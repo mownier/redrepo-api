@@ -8,8 +8,8 @@ type BaseParam struct {
 	
 }
 
-func (param BaseParam) HasErrors() bool {
-	return true
+func (param BaseParam) ValidateValues() error {
+	return nil
 }
 
 func (param BaseParam) IsEmpty(value string) bool {
