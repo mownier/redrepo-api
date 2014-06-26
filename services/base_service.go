@@ -10,20 +10,13 @@ import (
 	"reflect"
 )
 
-const (
-	EMAIL_SENDER_USERNAME = "redrepo.mail@gmail.com"
-	EMAIL_SENDER_PASS = "iamredrepo"
-	EMAIL_SENDER_SEREVER = "smtp.gmai.com"
-	EMAIL_SENDER_PORT = 3232
-)
-
 type BaseService struct {
 	gorest.RestService `root:"/api/v1/" consumes:"application/json" produces:"application/json"`
 }
 
 func (s BaseService) ValidateAPIKey() error {
 	apiKey := s.Context.Request().Header.Get("client_key")
-	if !reflect.DeepEqual(apiKey, "12345") {
+	if !reflect.DeepEqual(apiKey, "redrepoapikey") {
 		return errors.New("Invalid api key.")
 	}
 	return nil

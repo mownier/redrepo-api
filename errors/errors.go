@@ -15,6 +15,8 @@ const (
 	ACCOUNT_NOT_FOUND = 702
 	CLIENT_NOT_ALLOWED = 703
 	NOT_AUTHORIZED = 704
+	VERIFICATION_CODE_EXPIRED = 705
+	ACCOUNT_ALREADY_VERIFIED = 706
 )
 
 type ErrorResponse struct {
@@ -28,6 +30,8 @@ var errorMessage = map[int]string {
 	ACCOUNT_NOT_FOUND: "Account not found.",
 	CLIENT_NOT_ALLOWED: "Client not allowed.",
 	NOT_AUTHORIZED: "Not authorized.",
+	VERIFICATION_CODE_EXPIRED: "Verification code expired.",
+	ACCOUNT_ALREADY_VERIFIED: "Account already verified.",
 }
 
 func ErrorMessage(errorCode int) string {
