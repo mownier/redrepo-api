@@ -131,9 +131,7 @@ func (service AccountService) CreateAccount(param parameter.SignUp) {
         respData, respCode = errors.ErrorResponseData(errors.CLIENT_NOT_ALLOWED)
     }
     
-    service.ResponseBuilder().SetResponseCode(respCode)
-    service.ResponseBuilder().Write(respData)
-
+    service.BaseService.FireResponse(respData, respCode)
     return
 }
 
@@ -165,9 +163,7 @@ func (service AccountService) RetrieveAccount(accountId string) (resp response.A
         errors.Log(authError)
         respData, respCode = errors.ErrorResponseData(errors.NOT_AUTHORIZED) 
     }
-    
-    service.ResponseBuilder().SetResponseCode(respCode)
-    service.ResponseBuilder().Write(respData).Overide(true)
+    service.BaseService.FireResponse(respData, respCode)
     return
 }
 
@@ -199,9 +195,7 @@ func (service AccountService) RetrieveSettings(accountId string) (resp response.
         errors.Log(authError)
         respData, respCode = errors.ErrorResponseData(errors.NOT_AUTHORIZED) 
     }
-    
-    service.ResponseBuilder().SetResponseCode(respCode)
-    service.ResponseBuilder().Write(respData).Overide(true)
+    service.BaseService.FireResponse(respData, respCode)
     return
 }
 
@@ -250,8 +244,7 @@ func (service AccountService) VerifyAccount(param parameter.Verification) {
         errors.Log(clientError)
         respData, respCode = errors.ErrorResponseData(errors.CLIENT_NOT_ALLOWED)
     }
-    service.ResponseBuilder().SetResponseCode(respCode)
-    service.ResponseBuilder().Write(respData).Overide(true)
+    service.BaseService.FireResponse(respData, respCode)
 }
 
 func (service AccountService) RequestNewCode(param parameter.NewCode) {
@@ -327,8 +320,7 @@ func (service AccountService) RequestNewCode(param parameter.NewCode) {
         errors.Log(clientError)
         respData, respCode = errors.ErrorResponseData(errors.CLIENT_NOT_ALLOWED)
     }
-    service.ResponseBuilder().SetResponseCode(respCode)
-    service.ResponseBuilder().Write(respData).Overide(true)
+    service.BaseService.FireResponse(respData, respCode)
     return
 }
 

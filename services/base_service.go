@@ -29,3 +29,9 @@ func (s BaseService) GetAccessToken() (string, error) {
 	}
 	return accessToken, nil
 }
+
+func (s BaseService) FireResponse(respData []byte, respCode int) {
+	s.ResponseBuilder().SetContentType("application/json")
+    s.ResponseBuilder().SetResponseCode(respCode)
+    s.ResponseBuilder().Write(respData).Overide(true)
+}
