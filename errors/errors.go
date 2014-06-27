@@ -17,6 +17,9 @@ const (
 	NOT_AUTHORIZED = 704
 	VERIFICATION_CODE_EXPIRED = 705
 	ACCOUNT_ALREADY_VERIFIED = 706
+	MISMATCH_USERNAME_PASSWORD = 707
+	ACCOUNT_NOT_VERIFIED = 708
+
 )
 
 type ErrorResponse struct {
@@ -32,6 +35,8 @@ var errorMessage = map[int]string {
 	NOT_AUTHORIZED: "Not authorized.",
 	VERIFICATION_CODE_EXPIRED: "Verification code expired.",
 	ACCOUNT_ALREADY_VERIFIED: "Account already verified.",
+	MISMATCH_USERNAME_PASSWORD: "Mismatch username and password.",
+	ACCOUNT_NOT_VERIFIED: "Account not verified.",
 }
 
 func ErrorMessage(errorCode int) string {

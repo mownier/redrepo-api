@@ -36,6 +36,9 @@ func OpenDatabase() (*gorp.DbMap, error) {
 	dbmap.AddTableWithName(tables.Account{}, "accounts")
 	dbmap.AddTableWithName(tables.AccountSetting{}, "account_settings")
 	dbmap.AddTableWithName(tables.VerificationCode{}, "verification_codes")
+	dbmap.AddTableWithName(tables.AuthClient{}, "auth_clients")
+	dbmap.AddTableWithName(tables.AuthSession{}, "auth_sessions")
+	
 	return dbmap, nil
 }
 

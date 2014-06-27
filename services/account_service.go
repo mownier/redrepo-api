@@ -33,7 +33,7 @@ func (service AccountService) CreateAccount(param parameter.SignUp) {
     var respData []byte
     var respCode int
     
-    clientError := service.BaseService.ValidateAPIKey()
+    _, clientError := service.GetClientKey()
     if clientError == nil {
         paramError := param.ValidateValues()
         if paramError == nil {
@@ -63,22 +63,23 @@ func (service AccountService) CreateAccount(param parameter.SignUp) {
                                 verificationCode.Code = uniuri.NewLen(6)
                                 inserError = dbmap.Insert(verificationCode)
                                 if inserError == nil {
-                                    // Sends an email verification asynchronously 
-                                    go func() {
-                                        accountVerificationJoinResult := new(joins.AccountVerificationJoinResult)
-                                        dbmap.SelectOne(accountVerificationJoinResult, "select v.code, v.status, a.email from accounts a, verification_codes v where a.username=v.username and v.code=?", verificationCode.Code)
-                                        mailService := mail.DefaultMailService()
-                                        sendMailError := mailService.Send(mail.GetEmailVerificationTemplate(accountVerificationJoinResult.Code, accountVerificationJoinResult.Email), 
-                                                            []string{accountVerificationJoinResult.Email})
-                                        if sendMailError == nil {
-                                           fmt.Println("Successfully sent verification code to email: " + account.Email)
-                                        } else {
-                                            errors.LogErrorMessage("Unable to send verification code to email: " + account.Email)
-                                        }
-                                    }()
                                     accountSettingJoinResult := new(joins.AccountSettingJoinResult)
-                                    selectError := dbmap.SelectOne(accountSettingJoinResult, "select a.*, s.connected_to_facebook, s.connected_to_twitter, s.verified_account from accounts a, account_settings s WHERE a.username=?", account.Username) 
+                                    selectError := dbmap.SelectOne(accountSettingJoinResult, "select a.*, s.connected_to_facebook, s.connected_to_twitter, s.verified from accounts a, account_settings s WHERE a.username=s.username and a.username=?", account.Username) 
                                     if selectError == nil {
+                                        // Sends an email verification asynchronously 
+                                        go func() {
+                                            accountVerificationJoinResult := new(joins.AccountVerificationJoinResult)
+                                            dbmap.SelectOne(accountVerificationJoinResult, "select v.code, v.status, a.email from accounts a, verification_codes v where a.username=v.username and v.code=?", verificationCode.Code)
+                                            mailService := mail.DefaultMailService()
+                                            sendMailError := mailService.Send(mail.GetEmailVerificationTemplate(verificationCode.Code, account.Email), 
+                                                                []string{account.Email})
+                                            if sendMailError == nil {
+                                               fmt.Println("Successfully sent verification code to email: " + account.Email)
+                                            } else {
+                                                errors.LogErrorMessage("Unable to send verification code to email: " + account.Email)
+                                                errors.Log(sendMailError)
+                                            }
+                                        }()
                                         response := new(response.SignUp)
                                         handlers.BindAccountResponseWithResult(response, accountSettingJoinResult)
                                         respData, respCode = response.GetJSONResponseData()
@@ -176,7 +177,7 @@ func (service AccountService) RetrieveSettings(accountId string) (resp response.
         dbmap, connectionError := dbase.OpenDatabase()
         if connectionError == nil {
             accountSettingJoinResult := new(joins.AccountSettingJoinResult)
-            selectError := dbmap.SelectOne(accountSettingJoinResult, "select a.*, s.connected_to_facebook, s.connected_to_twitter, s.verified_account from accounts a, account_settings s where a.id=? or a.username=?", accountId, accountId) 
+            selectError := dbmap.SelectOne(accountSettingJoinResult, "select a.*, s.connected_to_facebook, s.connected_to_twitter, s.verified from accounts a, account_settings s where a.id=? or a.username=?", accountId, accountId) 
             if selectError == nil {
                 response := new(response.AccountSetting)
                 handlers.BindAccountSettingResponse(response, accountSettingJoinResult)
@@ -210,14 +211,14 @@ func (service AccountService) DeleteAccount(accountId string) {
 func (service AccountService) VerifyAccount(param parameter.Verification) {
     var respData []byte
     var respCode int
-    clientError := service.BaseService.ValidateAPIKey()
+    _, clientError := service.GetClientKey()
     if clientError == nil {
         dbmap, connectionError := dbase.OpenDatabase()
         if connectionError == nil {
             accountVerificationJoinResult := new(joins.AccountVerificationJoinResult)
             selectError := dbmap.SelectOne(accountVerificationJoinResult, "select v.id, v.code, v.status, a.email, a.username from accounts a, verification_codes v where a.username=v.username and v.code=? and v.status=?", param.Code, "ACTIVE")
             if selectError == nil {
-                _, updateError := dbmap.Exec("update account_settings a set a.verified_account=? where a.username=?", 1, accountVerificationJoinResult.Username)
+                _, updateError := dbmap.Exec("update account_settings a set a.verified=? where a.username=?", 1, accountVerificationJoinResult.Username)
                 if updateError == nil {
                     _, updateError = dbmap.Exec("update verification_codes v SET v.status=? where v.code=?", "EXPIRED", accountVerificationJoinResult.Code)
                     if updateError == nil {
@@ -251,14 +252,14 @@ func (service AccountService) RequestNewCode(param parameter.NewCode) {
     var respData []byte
     var respCode int
 
-    clientError := service.BaseService.ValidateAPIKey()
+    _, clientError := service.GetClientKey()
     if clientError == nil {
         dbmap, connectionError := dbase.OpenDatabase()
         if connectionError == nil {
             accountSettingJoinResult := new(joins.AccountSettingJoinResult)
-            selectError := dbmap.SelectOne(accountSettingJoinResult, "select s.verified_account, a.username from accounts a, account_settings s WHERE a.email=?", param.Email)
+            selectError := dbmap.SelectOne(accountSettingJoinResult, "select s.verified, a.username from accounts a, account_settings s WHERE a.username=s.username and a.email=?", param.Email)
             if selectError == nil {
-                if accountSettingJoinResult.VerifiedAccount == 0 {
+                if accountSettingJoinResult.Verified == 0 {
                     // TODO: Check if naay active the verification code para sa user
                     // If naay active, update table: 'verification_codes'
                     // else insert new verification_code

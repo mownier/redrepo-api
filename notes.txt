@@ -5,7 +5,7 @@ Normal Sign In Algorithm
 2. Check table 'accounts' if (username OR email) and password match
 2.1 If matching is valid, proceed to 3
 2.2 Else, throw an error ("Account does not exist")
-3. Check table 'account_settings' if column 'verified_account' is true
+3. Check table 'account_settings' if column 'verified' is true
 3.1 If true, proceed 4
 3.2 Else, throw an error ("Account not verified")
 4. Generate access token, refresh token, expiry date
@@ -19,7 +19,7 @@ Via SNS Sign In Algorithm
 2. Check table 'accounts' if (username OR email) and password match
 2.1 If matching is valid, proceed to 3
 2.2 Else, throw an error ("Account does not exist")
-3. Check table 'account_settings' if column 'verified_account' is true
+3. Check table 'account_settings' if column 'verified' is true
 3.1 If true, proceed 4
 3.2 Else, throw an error ("Account not verified")
 4. Get auth provider's name, access token, and refresh token

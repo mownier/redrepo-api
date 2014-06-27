@@ -16,7 +16,7 @@ type SignUp struct {
 	BloodType			string	`json:"blood_type"`
 	Latitude			float32	`json:"latitude"`
 	Longitude			float32	`json:"longitude"`
-	VerifiedAccount		int		`json:"verified_account"`
+	Verified			int		`json:"verified"`
 }
 
 func (resp SignUp) GetJSONResponseData() ([]byte, int) {

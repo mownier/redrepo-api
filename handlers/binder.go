@@ -6,6 +6,7 @@ import (
     "redrepo-api/dbase/joins"
 	"redrepo-api/parameter"
     "redrepo-api/response"
+    "redrepo-api/token"
     "strconv"
 	"time"
 	)
@@ -37,7 +38,7 @@ func BindAccountResponseWithResult(response *response.SignUp, result *joins.Acco
     response.BloodType = result.BloodType
     response.Latitude = result.Latitude
     response.Longitude = result.Longitude
-    response.VerifiedAccount = result.VerifiedAccount
+    response.Verified = result.Verified
 }
 
 func BindAccountSettingResponseWithResult(response *response.AccountSetting, result *joins.AccountSettingJoinResult) {
@@ -79,3 +80,15 @@ func BindAccountSettingResponse(response *response.AccountSetting, result *joins
     response.ConnectedToFacebook = result.ConnectedToFacebook
     response.ConnectedToTwitter = result.ConnectedToTwitter
 }
+ func BindAuthenticatedAccountResponse(response *response.AuthenticatedAccount, result *tables.Account) {
+    response.Id = strconv.Itoa(result.Id)
+    response.FirstName = result.FirstName
+    response.LastName = result.LastName
+    response.Email = result.Email
+    response.Username = result.Username
+    response.JoinedDate = result.DateJoined
+    response.BloodType = result.BloodType
+    response.Latitude = result.Latitude
+    response.Longitude = result.Longitude
+    response.AccessToken = token.GenerateAccessToken()
+ }
