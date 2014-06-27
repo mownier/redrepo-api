@@ -3,6 +3,7 @@ package parameter
 import (
 	"regexp"
 	"errors"
+	// "reflect"
 	)
 
 type SignUp struct {
@@ -17,6 +18,11 @@ type SignUp struct {
 	Longitude	float32	`json:"longitude"`
 }
 
+var bloodTypes = []string {
+	"A", "A+", "A-",
+	"O", "O+", "O-",
+	"AB", "AB+", "A-",
+}
 
 
 func (param SignUp) ValidateValues() error {
@@ -80,7 +86,20 @@ func (param SignUp) validateUsername() error {
 }
 
 func (param SignUp) validateBloodType() error {
-	return nil
+	valid := false
+	for i := 0; i < len(bloodTypes); i++ {
+		bloodType := bloodTypes[i]
+		if bloodType == param.BloodType {
+			valid = true
+			break
+		}
+	}
+
+	if valid == true {
+		return nil
+	} else {
+		return errors.New("Invalid blood type.")
+	}
 }
 
 func (param SignUp) validateCoordinate() error {
