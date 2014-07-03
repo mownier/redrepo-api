@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"code.google.com/p/go-uuid/uuid"
 	)
+
 func GenerateAccessToken() string {
 	accessToken := uuid.New()
 	return base64.StdEncoding.EncodeToString([]byte(accessToken))

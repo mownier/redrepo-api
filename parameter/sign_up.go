@@ -3,7 +3,6 @@ package parameter
 import (
 	"regexp"
 	"errors"
-	// "reflect"
 	)
 
 type SignUp struct {
