@@ -14,6 +14,7 @@ import (
 	"redrepo-api/dbase"
 	"redrepo-api/errors"
 	"redrepo-api/handlers"
+	"github.com/coopernurse/gorp"
 )
 
 type AuthenticationService struct {
@@ -26,7 +27,14 @@ type AuthenticationService struct {
 }
 
 func (service AuthenticationService) SignInWithFacebook(params string) {
+	var err error
+	var dbmap *gorp.DbMap
+
+	defer errors.CatchPanic(&err, "SignInWithFacebook")
 	
+	dbmap, err = dbase.OpenDatabase()
+    
+    dbase.CloseDatabase(dbmap)
 }
 
 func (service AuthenticationService) SignInWithTwitter(params string) {

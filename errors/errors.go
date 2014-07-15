@@ -7,6 +7,9 @@ package errors
 import (
 	"encoding/json" 
 	"net/http"
+	"fmt"
+	"runtime"
+	"errors"
 )
 
 const (
@@ -57,4 +60,28 @@ func ThrowInternalServerErrorResponse() ([]byte, int) {
 	resp.Message = http.StatusText(http.StatusInternalServerError)
 	jsonData, _ := json.Marshal(resp)
 	return jsonData, http.StatusInternalServerError
+}
+
+func CatchPanic(err *error, functionName string) {
+	if r := recover(); r != nil {
+        fmt.Printf("%s : PANIC Defered : %v\n", functionName, r)
+
+        // Capture the stack trace
+        buf := make([]byte, 10000)
+        runtime.Stack(buf, false)
+
+        fmt.Printf("%s : Stack Trace : %s", functionName, string(buf))
+
+        if err != nil {
+            *err = errors.New(fmt.Sprintf("%v", r))
+        }
+    } else if err != nil && *err != nil {
+        fmt.Printf("%s : ERROR : %v\n", functionName, *err)
+
+        // Capture the stack trace
+        buf := make([]byte, 10000)
+        runtime.Stack(buf, false)
+
+        fmt.Printf("%s : Stack Trace : %s", functionName, string(buf))
+    }
 }
